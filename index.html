@@ -378,10 +378,10 @@ body::after {
   <div class="bline" id="b0">Award Modular BIOS v4.51PG, An Energy Star Ally</div>
   <div class="bline" id="b1">Copyright (C) 1984-95, Award Software, Inc.</div>
   <div class="bline" id="b2"> </div>
-  <div class="bline" id="b3">486DX2-66 CPU at 66MHz</div>
-  <div class="bline" id="b4">Memory Test :  4096K OK</div>
+  <div class="bline" id="b3">386SX CPU at 40MHz</div>
+  <div class="bline" id="b4">Memory Test :  8192K OK</div>
   <div class="bline" id="b5"> </div>
-  <div class="bline" id="b6">Detecting HDD Primary Master ... WDC AC2540H      4096MB</div>
+  <div class="bline" id="b6">Detecting HDD Primary Master ... WDC AC2540H      2048MB</div>
   <div class="bline" id="b7">Detecting HDD Primary Slave  ... None</div>
   <div class="bline" id="b8"> </div>
   <div class="bline" id="b9">Award Plug and Play BIOS Extension v1.0A</div>
@@ -577,7 +577,7 @@ body::after {
     <div class="wbody">
       <div class="ainner">
         <div style="font-size:48px;">🖥</div>
-        <div style="font-size:13px;font-weight:bold;">Mark's Win16 Software Collection</div>
+        <div style="font-size:13px;font-weight:bold;">kokakoda's Win16 Software Collection</div>
         <div style="font-size:10px;color:#444;">Building modern workflows on ancient iron</div>
         <hr class="ahr">
         <div style="font-size:11px;line-height:1.7;">
@@ -585,7 +585,7 @@ body::after {
           built with Borland C++ 4.0, C89 &amp; Winsock 1.1.<br>
           Not ports. Not emulations. New software<br>
           for a 30-year-old platform.<br><br>
-          <span style="color:#444;">Runs on real 486 hardware and DOSBox.</span>
+          <span style="color:#444;">Runs on real 386 hardware or DOSBox.</span>
         </div>
         <hr class="ahr">
         <div style="font-size:10px;color:#444;">kokakoda.github.io</div>
@@ -925,12 +925,12 @@ async function downloadApp() {
 // ═══════════════════════════════════════════
 //  PUTER — AI CHAT
 // ═══════════════════════════════════════════
-const SYS=`You are a concise technical assistant embedded in a retro Windows 3.1 portfolio website. The developer is Mark (GitHub: kokakoda). He builds novel Win16 applications for real Windows 3.1 hardware using Borland C++ 4.0, C89, Win16 Large Model, and Winsock 1.1.
+const SYS=`You are a concise technical assistant embedded in a retro Windows 3.1 portfolio website. The developer is (GitHub: kokakoda). He builds novel Win16 applications for real Windows 3.1 hardware using Borland C++ 4.0, C89, Win16 Large Model, and Winsock 1.1.
 
 Applications in this collection:
 ${APPS.map(a=>`- ${a.name.replace('\n',' ')} (${a.version}): ${a.desc}`).join('\n')}
 
-Answer questions about these apps, running them, Windows 3.1 setup, Win16 programming, Borland C++, Winsock, 486 hardware, and related topics. Be technically precise and concise. Use plain text only — no markdown.`;
+Answer questions about these apps, running them, Windows 3.1 setup, Win16 programming, Borland C++, Winsock, 386 hardware, and related topics. Be technically precise and concise. Use plain text only — no markdown.`;
 
 const chatHistory=[];
 const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
