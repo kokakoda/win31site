@@ -327,6 +327,65 @@ html, body {
   border-right:1px solid var(--dk); border-bottom:1px solid var(--dk);
 }
 
+/* ─── DESKTOP ICON (minimised Progman) ─────── */
+.desk-icon {
+  position:absolute;
+  display:flex; flex-direction:column; align-items:center;
+  gap:2px; width:72px; cursor:pointer; padding:4px 2px;
+}
+.desk-icon .di-img {
+  font-size:32px; line-height:1;
+  width:32px; height:32px; display:flex; align-items:center; justify-content:center;
+}
+.desk-icon .di-label {
+  font-size:11px; color:var(--white); text-align:center;
+  text-shadow:1px 1px 0 var(--black);
+  padding:1px 3px;
+  word-break:break-word; line-height:1.2;
+}
+.desk-icon.sel .di-label { background:var(--navy); }
+
+/* ─── GROUP ICON (iconified inside Progman) ── */
+/* The icon tray sits at the bottom of pm-body  */
+#grp-icon-tray {
+  display:flex; flex-wrap:wrap; gap:4px;
+  padding:4px 4px 0; flex-shrink:0;
+}
+.grp-icon {
+  display:flex; flex-direction:column; align-items:center;
+  gap:1px; width:80px; cursor:pointer; padding:2px;
+  border:1px solid transparent;
+  /* Win3.1 group icons have a title bar stub */
+}
+.grp-icon:hover { border:1px dotted var(--navy); }
+.grp-icon.sel   { background:var(--navy); }
+.grp-icon.sel .gi-label { color:var(--white); }
+/* tiny title-bar strip above the icon */
+.gi-bar {
+  width:100%; height:12px;
+  background:var(--navy);
+  display:flex; align-items:center;
+  padding:0 2px; margin-bottom:1px;
+}
+.gi-bar-text { font-size:8px; color:var(--white); overflow:hidden; white-space:nowrap; flex:1; }
+.gi-bar-btn  {
+  width:9px; height:9px; flex-shrink:0;
+  background:var(--gray);
+  border-top:1px solid var(--lt); border-left:1px solid var(--lt);
+  border-right:1px solid var(--dkk); border-bottom:1px solid var(--dkk);
+  position:relative;
+}
+/* tiny up-triangle in the restore button */
+.gi-bar-btn::after {
+  content:''; position:absolute;
+  left:50%; top:50%; transform:translate(-50%,-60%);
+  width:0; height:0;
+  border-left:2px solid transparent; border-right:2px solid transparent;
+  border-bottom:3px solid var(--black);
+}
+.gi-img   { font-size:24px; line-height:1; }
+.gi-label { font-size:9px; text-align:center; color:var(--black); line-height:1.2; }
+
 /* CRT scanlines */
 body::after {
   content:''; position:fixed; inset:0; pointer-events:none; z-index:99999;
@@ -424,37 +483,42 @@ body::after {
       </span>
     </div>
 
-    <div class="wbody" id="pm-body">
-      <div class="window" id="grp-net" style="position:relative;width:100%;margin-bottom:6px;">
-        <div class="tb active" data-win="grp-net">
-          <span class="tbtn tbtn-sys"></span>
-          <span class="tb-text">Networking Applications</span>
-          <span class="tbtn tbtn-min"></span>
+    <div class="wbody" id="pm-body" style="display:flex;flex-direction:column;">
+      <!-- scrollable group area -->
+      <div id="pm-groups" style="flex:1;overflow:auto;padding:4px;">
+        <div class="window" id="grp-net" style="position:relative;width:100%;margin-bottom:6px;">
+          <div class="tb active" data-win="grp-net">
+            <span class="tbtn tbtn-sys"></span>
+            <span class="tb-text">Networking Applications</span>
+            <span class="tbtn tbtn-min" onclick="iconifyGroup('grp-net')"></span>
+          </div>
+          <div class="wbody" style="padding:4px;overflow:visible;">
+            <div class="gframe" id="icons-net"></div>
+          </div>
         </div>
-        <div class="wbody" style="padding:4px;overflow:visible;">
-          <div class="gframe" id="icons-net"></div>
+        <div class="window" id="grp-mm" style="position:relative;width:100%;margin-bottom:6px;">
+          <div class="tb active" data-win="grp-mm">
+            <span class="tbtn tbtn-sys"></span>
+            <span class="tb-text">Multimedia &amp; Graphics</span>
+            <span class="tbtn tbtn-min" onclick="iconifyGroup('grp-mm')"></span>
+          </div>
+          <div class="wbody" style="padding:4px;overflow:visible;">
+            <div class="gframe" id="icons-mm"></div>
+          </div>
+        </div>
+        <div class="window" id="grp-ai" style="position:relative;width:100%;margin-bottom:6px;">
+          <div class="tb active" data-win="grp-ai">
+            <span class="tbtn tbtn-sys"></span>
+            <span class="tb-text">AI &amp; Utilities</span>
+            <span class="tbtn tbtn-min" onclick="iconifyGroup('grp-ai')"></span>
+          </div>
+          <div class="wbody" style="padding:4px;overflow:visible;">
+            <div class="gframe" id="icons-ai"></div>
+          </div>
         </div>
       </div>
-      <div class="window" id="grp-mm" style="position:relative;width:100%;margin-bottom:6px;">
-        <div class="tb active" data-win="grp-mm">
-          <span class="tbtn tbtn-sys"></span>
-          <span class="tb-text">Multimedia &amp; Graphics</span>
-          <span class="tbtn tbtn-min"></span>
-        </div>
-        <div class="wbody" style="padding:4px;overflow:visible;">
-          <div class="gframe" id="icons-mm"></div>
-        </div>
-      </div>
-      <div class="window" id="grp-ai" style="position:relative;width:100%;margin-bottom:6px;">
-        <div class="tb active" data-win="grp-ai">
-          <span class="tbtn tbtn-sys"></span>
-          <span class="tb-text">AI &amp; Utilities</span>
-          <span class="tbtn tbtn-min"></span>
-        </div>
-        <div class="wbody" style="padding:4px;overflow:visible;">
-          <div class="gframe" id="icons-ai"></div>
-        </div>
-      </div>
+      <!-- iconified group tray — sits at bottom of PM client area -->
+      <div id="grp-icon-tray"></div>
     </div>
 
     <div class="sbar">
@@ -694,7 +758,35 @@ const openAbout  = () => { closeAllMenus(); const w=document.getElementById('abo
 const openChat   = () => { closeAllMenus(); const w=document.getElementById('chatwin'); w.style.display='flex'; bringFront('chatwin'); if(!chatHistory.length) appendMsg('sys','Welcome to Win16 Help. Ask me anything about these apps or Win16 development.'); };
 
 let _isMax=false, _pmPrev={};
-function minWin(id) { closeWin(id); }
+
+// ─── PROGRAM MANAGER → DESKTOP ICON ────────
+function minWin(id) {
+  if (id !== 'pm') { closeWin(id); return; }
+  const pm = document.getElementById('pm');
+  pm.style.display = 'none';
+
+  let icon = document.getElementById('pm-desk-icon');
+  if (!icon) {
+    icon = document.createElement('div');
+    icon.id = 'pm-desk-icon';
+    icon.className = 'desk-icon';
+    icon.innerHTML = '<div class="di-img">🖥</div><div class="di-label">Program Manager</div>';
+    icon.style.left = '20px';
+    icon.style.top  = 'auto';
+    icon.style.bottom = '28px';
+    icon.addEventListener('click', () => {
+      document.querySelectorAll('.desk-icon').forEach(i=>i.classList.remove('sel'));
+      icon.classList.add('sel');
+    });
+    icon.addEventListener('dblclick', () => {
+      pm.style.display = 'flex';
+      bringFront('pm');
+      icon.remove();
+    });
+    document.getElementById('desktop').appendChild(icon);
+  }
+}
+
 function toggleMax(id) {
   const w=document.getElementById(id);
   if (!_isMax) {
@@ -705,6 +797,49 @@ function toggleMax(id) {
     w.style.left=_pmPrev.l; w.style.top=_pmPrev.t; w.style.width=_pmPrev.wi; w.style.height=_pmPrev.h;
     _isMax=false;
   }
+}
+
+// ─── GROUP WINDOW → ICON IN TRAY ───────────
+const GROUP_META = {
+  'grp-net': { label:'Networking Apps', icon:'🌐' },
+  'grp-mm':  { label:'Multimedia',      icon:'🎵' },
+  'grp-ai':  { label:'AI & Utilities',  icon:'🤖' },
+};
+
+function iconifyGroup(id) {
+  const win = document.getElementById(id);
+  win.style.display = 'none';
+
+  const tray = document.getElementById('grp-icon-tray');
+  if (document.getElementById('gi-'+id)) return;
+
+  const meta = GROUP_META[id] || { label:id, icon:'📁' };
+  const gi = document.createElement('div');
+  gi.className = 'grp-icon';
+  gi.id = 'gi-' + id;
+  gi.innerHTML =
+    '<div class="gi-bar">' +
+      '<span class="gi-bar-text">' + meta.label + '</span>' +
+      '<span class="gi-bar-btn"></span>' +
+    '</div>' +
+    '<div class="gi-img">' + meta.icon + '</div>' +
+    '<div class="gi-label">' + meta.label + '</div>';
+
+  gi.addEventListener('click', () => {
+    document.querySelectorAll('.grp-icon').forEach(x=>x.classList.remove('sel'));
+    gi.classList.add('sel');
+  });
+  gi.addEventListener('dblclick', () => {
+    win.style.display = 'flex';
+    win.style.position = 'relative';
+    win.style.width = '100%';
+    win.style.height = '';
+    // Re-insert into pm-groups scroll area if needed
+    const groups = document.getElementById('pm-groups');
+    if (!groups.contains(win)) groups.appendChild(win);
+    gi.remove();
+  });
+  tray.appendChild(gi);
 }
 
 // ─── WORKING WINDOW MENU ACTIONS ───────────
