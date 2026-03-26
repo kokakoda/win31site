@@ -346,45 +346,23 @@ html, body {
 .desk-icon.sel .di-label { background:var(--navy); }
 
 /* ─── GROUP ICON (iconified inside Progman) ── */
-/* The icon tray sits at the bottom of pm-body  */
+/* Real Win3.1: just an icon + label, same as program item icons */
 #grp-icon-tray {
   display:flex; flex-wrap:wrap; gap:4px;
-  padding:4px 4px 0; flex-shrink:0;
+  padding:4px 4px 2px; flex-shrink:0;
+  border-top:1px solid var(--dk);
 }
+#grp-icon-tray:empty { border-top:none; padding:0; }
 .grp-icon {
   display:flex; flex-direction:column; align-items:center;
-  gap:1px; width:80px; cursor:pointer; padding:2px;
+  gap:3px; width:72px; cursor:pointer; padding:4px 2px;
   border:1px solid transparent;
-  /* Win3.1 group icons have a title bar stub */
 }
 .grp-icon:hover { border:1px dotted var(--navy); }
 .grp-icon.sel   { background:var(--navy); }
 .grp-icon.sel .gi-label { color:var(--white); }
-/* tiny title-bar strip above the icon */
-.gi-bar {
-  width:100%; height:12px;
-  background:var(--navy);
-  display:flex; align-items:center;
-  padding:0 2px; margin-bottom:1px;
-}
-.gi-bar-text { font-size:8px; color:var(--white); overflow:hidden; white-space:nowrap; flex:1; }
-.gi-bar-btn  {
-  width:9px; height:9px; flex-shrink:0;
-  background:var(--gray);
-  border-top:1px solid var(--lt); border-left:1px solid var(--lt);
-  border-right:1px solid var(--dkk); border-bottom:1px solid var(--dkk);
-  position:relative;
-}
-/* tiny up-triangle in the restore button */
-.gi-bar-btn::after {
-  content:''; position:absolute;
-  left:50%; top:50%; transform:translate(-50%,-60%);
-  width:0; height:0;
-  border-left:2px solid transparent; border-right:2px solid transparent;
-  border-bottom:3px solid var(--black);
-}
-.gi-img   { font-size:24px; line-height:1; }
-.gi-label { font-size:9px; text-align:center; color:var(--black); line-height:1.2; }
+.gi-img   { font-size:32px; line-height:1; width:32px; height:32px; display:flex; align-items:center; justify-content:center; }
+.gi-label { font-size:10px; text-align:center; color:var(--black); line-height:1.3; word-break:break-word; }
 
 /* CRT scanlines */
 body::after {
@@ -818,10 +796,6 @@ function iconifyGroup(id) {
   gi.className = 'grp-icon';
   gi.id = 'gi-' + id;
   gi.innerHTML =
-    '<div class="gi-bar">' +
-      '<span class="gi-bar-text">' + meta.label + '</span>' +
-      '<span class="gi-bar-btn"></span>' +
-    '</div>' +
     '<div class="gi-img">' + meta.icon + '</div>' +
     '<div class="gi-label">' + meta.label + '</div>';
 
