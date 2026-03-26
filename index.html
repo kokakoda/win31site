@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mark's Win16 Software Collection</title>
+<script src="https://js.puter.com/v2/"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --desk:   #008080;
+  --gray:   #c0c0c0;
+  --white:  #ffffff;
+  --black:  #000000;
+  --navy:   #000080;
+  --hi-lt:  #ffffff;
+  --hi-md:  #dfdfdf;
+  --hi-dk:  #808080;
+  --hi-dkk: #404040;
+  --font:   'MS Sans Serif','Microsoft Sans Serif',Tahoma,sans-serif;
+  --mono:   'VT323','Courier New',monospace;
+}
+
+html, body {
+  width:100%; height:100%; overflow:hidden;
+  font-family:var(--font); font-size:11px;
+  background:var(--desk); cursor:default; user-select:none;
+}
+
+/* ── WINDOW SHELL ── */
+.window {
+  position:absolute; background:var(--gray);
+  border-top:2px solid var(--hi-lt); border-left:2px solid var(--hi-lt);
+  border-right:2px solid var(--hi-dkk); border-bottom:2px solid var(--hi-dkk);
+  box-shadow:1px 1px 0 var(--black);
+  display:flex; flex-direction:column;
+  min-width:120px; min-height:60px;
+}
+
+/* Title bar */
+.titlebar {
+  height:18px; display:flex; align-items:center;
+  padding:1px 2px; gap:2px; flex-shrink:0; cursor:move;
+}
+.titlebar.active   { background:var(--navy); color:var(--white); }
+.titlebar.inactive { background:var(--hi-dk); color:var(--hi-md); }
+.titlebar-text { flex:1; font-size:11px; font-weight:bold; white-space:nowrap; overflow:hidden; padding:0 2px; }
+
+/* Title buttons */
+.tbtn {
+  width:16px; height:14px; flex-shrink:0;
+  background:var(--gray);
+  border-top:1px solid var(--hi-lt); border-left:1px solid var(--hi-lt);
+  border-right:1px solid var(--hi-dkk); border-bottom:1px solid var(--hi-dkk);
+  display:flex; align-items:center; justify-content:center;
+  font-size:9px; color:var(--black); cursor:pointer;
+}
+.tbtn:active {
+  border-top:1px solid var(--hi-dkk); border-left:1px solid var(--hi-dkk);
+  border-right:1px solid var(--hi-lt); border-bottom:1px solid var(--hi-lt);
+}
+.tbtn-sys  { font-size:11px; }
+.tbtn-min::after   { content:'_'; }
+.tbtn-max::after   { content:'▲'; font-size:7px; }
+.tbtn-close::after { content:'✕'; font-size:8px; }
+
+/* Menu bar */
+.menubar {
+  height:18px; background:var(--gray);
+  border-bottom:1px solid var(--hi-dk);
+  display:flex; align-items:center; padding:0 2px; flex-shrink:0;
+}
+.mitem {
+  padding:1px 8px; font-size:11px; cursor:pointer; height:100%;
+  display:flex; align-items:center;
+}
+.mitem:hover { background:var(--navy); color:var(--white); }
+
+/* Window body */
+.wbody { flex:1; overflow:auto; padding:4px; }
+
+/* Status bar */
+.statusbar {
+  height:17px; flex-shrink:0; border-top:1px solid var(--hi-dk);
+  display:flex; align-items:center; padding:0 4px; gap:6px; font-size:10px;
+}
+.ssep { width:0; height:13px; border-left:1px solid var(--hi-dk); border-right:1px solid var(--white); }
+
+/* ── BUTTONS ── */
+.btn {
+  height:23px; min-width:75px; background:var(--gray);
+  border-top:2px solid var(--hi-lt); border-left:2px solid var(--hi-lt);
+  border-right:2px solid var(--hi-dkk); border-bottom:2px solid var(--hi-dkk);
+  font-family:var(--font); font-size:11px; color:var(--black);
+  cursor:pointer; padding:0 8px;
+}
+.btn:active {
+  border-top:2px solid var(--hi-dkk); border-left:2px solid var(--hi-dkk);
+  border-right:2px solid var(--hi-lt); border-bottom:2px solid var(--hi-lt);
+  padding:1px 7px 0 9px;
+}
+.btn:disabled { color:var(--hi-dk); cursor:default; }
+.btn.default { outline:1px solid var(--black); outline-offset:-5px; }
+
+/* ── PROGRAM GROUP ── */
+.group-frame {
+  border-top:1px solid var(--hi-dkk); border-left:1px solid var(--hi-dkk);
+  border-right:1px solid var(--white); border-bottom:1px solid var(--white);
+  background:var(--white); padding:8px;
+  display:flex; flex-wrap:wrap; gap:8px; align-content:flex-start; overflow:auto;
+}
+.prog-icon {
+  display:flex; flex-direction:column; align-items:center;
+  gap:3px; width:72px; cursor:pointer; padding:4px 2px;
+  border:1px solid transparent;
+}
+.prog-icon:hover  { border:1px dotted var(--navy); }
+.prog-icon.sel    { background:var(--navy); }
+.prog-icon.sel .prog-label { color:var(--white); }
+.prog-img   { font-size:32px; line-height:1; width:32px; height:32px; display:flex; align-items:center; justify-content:center; }
+.prog-label { font-size:10px; text-align:center; color:var(--black); line-height:1.3; word-break:break-word; }
+
+/* ── DESKTOP ── */
+#desktop { width:100%; height:100%; position:relative; display:none; }
+#desktop.show { display:block; }
+
+/* ── BOOT ── */
+#boot {
+  position:fixed; inset:0; z-index:9000; background:#000; color:#aaa;
+  font-family:var(--mono); font-size:16px;
+  padding:24px 32px; display:flex; flex-direction:column; gap:1px; overflow:hidden;
+}
+.bline { opacity:0; white-space:pre; }
+.bline.on { opacity:1; }
+
+#winlogo {
+  position:fixed; inset:0; z-index:8999; background:#000;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  opacity:0; pointer-events:none; transition:opacity 0.35s;
+}
+#winlogo.show { opacity:1; pointer-events:all; }
+.wl-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:28px; }
+.wl-pane { width:56px; height:56px; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:bold; color:white; border:2px solid rgba(255,255,255,0.3); }
+.wl-r{background:#c00}.wl-g{background:#090}.wl-b{background:#00c}.wl-y{background:#c80}
+.wl-title { color:white; font-family:var(--mono); font-size:30px; letter-spacing:10px; }
+.wl-sub   { color:#666; font-family:var(--mono); font-size:13px; letter-spacing:4px; margin-top:6px; }
+.wl-prog  { margin-top:28px; width:260px; height:12px; background:#111; border:1px solid #444; }
+.wl-bar   { height:100%; width:0%; background:#00a; }
+
+/* ── DETAIL WINDOW ── */
+.det-header { display:flex; gap:10px; align-items:flex-start; margin-bottom:6px; }
+.det-bigicon{ font-size:40px; flex-shrink:0; }
+.det-name   { font-size:13px; font-weight:bold; }
+.det-meta   { font-size:10px; color:#444; margin-top:2px; line-height:1.6; }
+.det-desc   {
+  font-size:11px; line-height:1.55; padding:6px; margin-bottom:6px; min-height:60px;
+  border-top:1px solid var(--hi-dkk); border-left:1px solid var(--hi-dkk);
+  border-right:1px solid var(--white); border-bottom:1px solid var(--white);
+  background:var(--white);
+}
+.tag-row { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:8px; }
+.tag {
+  padding:1px 6px; font-size:10px;
+  border-top:1px solid var(--hi-lt); border-left:1px solid var(--hi-lt);
+  border-right:1px solid var(--hi-dkk); border-bottom:1px solid var(--hi-dkk);
+}
+.btn-row { display:flex; gap:6px; justify-content:flex-end; }
+
+/* ── CHAT ── */
+.chat-log {
+  border-top:1px solid var(--hi-dkk); border-left:1px solid var(--hi-dkk);
+  border-right:1px solid var(--white); border-bottom:1px solid var(--white);
+  background:var(--white); padding:4px;
+  overflow-y:auto; height:220px; margin-bottom:4px;
+}
+.cmsg { margin-bottom:5px; font-size:11px; line-height:1.5; }
+.cmsg .who { font-weight:bold; }
+.cmsg.user .who { color:var(--navy); }
+.cmsg.ai   .who { color:#800000; }
+.cmsg.sys  .who { color:var(--hi-dk); font-style:italic; }
+.chat-row { display:flex; gap:4px; }
+.chat-inp {
+  flex:1; height:21px; font-family:var(--font); font-size:11px; padding:2px 4px;
+  border-top:1px solid var(--hi-dkk); border-left:1px solid var(--hi-dkk);
+  border-right:1px solid var(--white); border-bottom:1px solid var(--white);
+  background:var(--white); outline:none;
+}
+
+/* ── ABOUT ── */
+.about-inner { display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px; padding:8px; }
+.about-hr { width:100%; border:none; border-top:1px solid var(--hi-dk); border-bottom:1px solid var(--white); margin:2px 0; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width:16px; height:16px; }
+::-webkit-scrollbar-track { background:var(--gray); }
+::-webkit-scrollbar-thumb {
+  background:var(--gray);
+  border-top:1px solid var(--hi-lt); border-left:1px solid var(--hi-lt);
+  border-right:1px solid var(--hi-dk); border-bottom:1px solid var(--hi-dk);
+}
+::-webkit-scrollbar-button {
+  background:var(--gray); width:16px; height:16px;
+  border-top:1px solid var(--hi-lt); border-left:1px solid var(--hi-lt);
+  border-right:1px solid var(--hi-dk); border-bottom:1px solid var(--hi-dk);
+  display:block;
+}
+
+/* CRT */
+body::after {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:99999;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.04) 2px,rgba(0,0,0,0.04) 4px);
+}
+</style>
+</head>
+<body>
+
+<!-- BOOT -->
+<div id="boot">
+  <div class="bline" id="b0">Award Modular BIOS v4.51PG, An Energy Star Ally</div>
+  <div class="bline" id="b1">Copyright (C) 1984-95, Award Software, Inc.</div>
+  <div class="bline" id="b2"> </div>
+  <div class="bline" id="b3">486DX2-66 CPU at 66MHz</div>
+  <div class="bline" id="b4">Memory Test :  4096K OK</div>
+  <div class="bline" id="b5"> </div>
+  <div class="bline" id="b6">Detecting HDD Primary Master ... WDC AC2540H      4096MB</div>
+  <div class="bline" id="b7">Detecting HDD Primary Slave  ... None</div>
+  <div class="bline" id="b8"> </div>
+  <div class="bline" id="b9">Award Plug and Play BIOS Extension v1.0A</div>
+  <div class="bline" id="b10">Copyright (C) 1995, Award Software, Inc.</div>
+  <div class="bline" id="b11"> </div>
+  <div class="bline" id="b12">Keyboard ........ Detected</div>
+  <div class="bline" id="b13">Mouse ........... COM1 (Serial)</div>
+  <div class="bline" id="b14"> </div>
+  <div class="bline" id="b15">Starting MS-DOS 6.22...</div>
+  <div class="bline" id="b16"> </div>
+  <div class="bline" id="b17">C:\WINDOWS&gt; win</div>
+</div>
+
+<!-- WIN LOGO -->
+<div id="winlogo">
+  <div class="wl-grid">
+    <div class="wl-pane wl-r">W</div><div class="wl-pane wl-g">i</div>
+    <div class="wl-pane wl-b">n</div><div class="wl-pane wl-y">™</div>
+  </div>
+  <div class="wl-title">Windows</div>
+  <div class="wl-sub">VERSION 3.11 FOR WORKGROUPS</div>
+  <div class="wl-prog"><div class="wl-bar" id="progbar"></div></div>
+</div>
+
+<!-- DESKTOP -->
+<div id="desktop">
+
+  <!-- PROGRAM MANAGER -->
+  <div class="window" id="pm" style="left:8px;top:8px;width:790px;height:510px;">
+    <div class="titlebar active" data-win="pm">
+      <span class="tbtn tbtn-sys">▬</span>
+      <span class="titlebar-text">Program Manager</span>
+      <span class="tbtn tbtn-min"></span>
+      <span class="tbtn tbtn-max" onclick="maxWin('pm')"></span>
+    </div>
+    <div class="menubar">
+      <span class="mitem">File</span>
+      <span class="mitem">Options</span>
+      <span class="mitem">Window</span>
+      <span class="mitem" onclick="openAbout()">Help</span>
+    </div>
+    <div class="wbody" id="pm-body">
+
+      <div class="window" id="grp-net" style="position:relative;width:100%;margin-bottom:6px;">
+        <div class="titlebar active" data-win="grp-net">
+          <span class="tbtn tbtn-sys">▬</span>
+          <span class="titlebar-text">Networking Applications</span>
+          <span class="tbtn tbtn-min"></span>
+        </div>
+        <div class="wbody" style="padding:4px;overflow:visible;">
+          <div class="group-frame" id="icons-net"></div>
+        </div>
+      </div>
+
+      <div class="window" id="grp-mm" style="position:relative;width:100%;margin-bottom:6px;">
+        <div class="titlebar active" data-win="grp-mm">
+          <span class="tbtn tbtn-sys">▬</span>
+          <span class="titlebar-text">Multimedia &amp; Graphics</span>
+          <span class="tbtn tbtn-min"></span>
+        </div>
+        <div class="wbody" style="padding:4px;overflow:visible;">
+          <div class="group-frame" id="icons-mm"></div>
+        </div>
+      </div>
+
+      <div class="window" id="grp-ai" style="position:relative;width:100%;margin-bottom:6px;">
+        <div class="titlebar active" data-win="grp-ai">
+          <span class="tbtn tbtn-sys">▬</span>
+          <span class="titlebar-text">AI &amp; Utilities</span>
+          <span class="tbtn tbtn-min"></span>
+        </div>
+        <div class="wbody" style="padding:4px;overflow:visible;">
+          <div class="group-frame" id="icons-ai"></div>
+        </div>
+      </div>
+
+    </div>
+    <div class="statusbar">
+      <span id="status-msg">Double-click an icon to view application details</span>
+      <div class="ssep"></div>
+      <span id="status-count"></span>
+    </div>
+  </div>
+
+  <!-- APP DETAIL -->
+  <div class="window" id="detwin" style="left:220px;top:80px;width:460px;display:none;">
+    <div class="titlebar active" data-win="detwin">
+      <span class="tbtn tbtn-sys" id="det-sys">📄</span>
+      <span class="titlebar-text" id="det-tbar">Application</span>
+      <span class="tbtn tbtn-close" onclick="closeWin('detwin')"></span>
+    </div>
+    <div class="wbody">
+      <div class="det-header">
+        <div class="det-bigicon" id="det-icon">📄</div>
+        <div>
+          <div class="det-name" id="det-name">App</div>
+          <div class="det-meta" id="det-meta"></div>
+        </div>
+      </div>
+      <div class="det-desc" id="det-desc"></div>
+      <div class="tag-row" id="det-tags"></div>
+      <div class="btn-row">
+        <button class="btn" id="btn-dl" onclick="downloadApp()">📦 Download</button>
+        <button class="btn" onclick="askAboutApp()">💬 Ask Help</button>
+        <button class="btn default" onclick="closeWin('detwin')">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI HELP / CHAT -->
+  <div class="window" id="chatwin" style="left:150px;top:150px;width:430px;display:none;">
+    <div class="titlebar active" data-win="chatwin">
+      <span class="tbtn tbtn-sys">?</span>
+      <span class="titlebar-text">Win16 Help — AI Assistant</span>
+      <span class="tbtn tbtn-close" onclick="closeWin('chatwin')"></span>
+    </div>
+    <div class="menubar">
+      <span class="mitem" onclick="chatClear()">Clear</span>
+    </div>
+    <div class="wbody">
+      <div class="chat-log" id="chat-log"></div>
+      <div class="chat-row">
+        <input class="chat-inp" id="chat-inp" type="text" placeholder="Ask about any app or Win16 development…"
+          onkeydown="if(event.key==='Enter')sendChat()">
+        <button class="btn" style="min-width:50px;height:21px;font-size:10px;" onclick="sendChat()">Send</button>
+      </div>
+    </div>
+    <div class="statusbar"><span id="chat-st">Ready — powered by puter.ai</span></div>
+  </div>
+
+  <!-- ABOUT -->
+  <div class="window" id="aboutwin" style="left:290px;top:160px;width:320px;display:none;">
+    <div class="titlebar active" data-win="aboutwin">
+      <span class="tbtn tbtn-sys">ℹ</span>
+      <span class="titlebar-text">About Program Manager</span>
+      <span class="tbtn tbtn-close" onclick="closeWin('aboutwin')"></span>
+    </div>
+    <div class="wbody">
+      <div class="about-inner">
+        <div style="font-size:48px;">🖥</div>
+        <div style="font-size:13px;font-weight:bold;">Mark's Win16 Software Collection</div>
+        <div style="font-size:10px;color:#444;">Building modern workflows on ancient iron</div>
+        <hr class="about-hr">
+        <div style="font-size:11px;line-height:1.7;">
+          Novel Win16 applications for Windows 3.1,<br>
+          built with Borland C++ 4.0, C89 &amp; Winsock 1.1.<br>
+          Not ports. Not emulations. New software<br>
+          for a 30-year-old platform.<br><br>
+          <span style="color:#444;">Runs on real 486 hardware and DOSBox.</span>
+        </div>
+        <hr class="about-hr">
+        <div style="font-size:10px;color:#444;">kokakoda.github.io</div>
+        <button class="btn default" onclick="closeWin('aboutwin')" style="margin-top:6px;">OK</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /desktop -->
+
+<script>
+// ── APP DATA ──────────────────────────────────────────────
+const APPS = [
+  { id:'claude',  name:'CLAUDE.EXE',     icon:'🤖', group:'ai',  version:'v2.47', file:'claude_v247.zip',
+    desc:'A Windows 3.1 client for the Anthropic Claude AI API. Communicates via a Python bridge proxy. Features streaming responses with cancel, session save/load, system prompt presets, font picker, model switcher, keyboard shortcuts, status bar, and inline emoji rendering. Possibly the world\'s first AI chat client for Win16.',
+    tags:['C89','Win16','Winsock 1.1','Borland C++ 4.0','AI','HTTP'] },
+  { id:'rssread', name:'RSSREAD',         icon:'📡', group:'net', version:'v1.0',  file:'rssread_v10.zip',
+    desc:'A full-featured RSS 2.0 and Atom feed reader for Windows 3.1. Asynchronous networking via Winsock 1.1, INI-based feed persistence, HTML stripping, and a clean multi-pane interface. ~2,600 lines across a multi-file architecture.',
+    tags:['C89','Win16','Winsock 1.1','RSS 2.0','Atom','XML'] },
+  { id:'vnc',     name:'VNC Viewer',      icon:'🖥', group:'net', version:'v1.0',  file:'vncview_v10.zip',
+    desc:'A Win16 RFB 3.3/3.7/3.8 VNC client with Raw and CopyRect encodings. Async Winsock state machine, 8bpp palettized display. Remote-control your modern desktop from a 486. Confirmed running on real Windows 3.1 hardware.',
+    tags:['C89','Win16','Winsock 1.1','RFB 3.8','VNC','Remote Desktop'] },
+  { id:'ytplay',  name:'YTPLAY',          icon:'▶',  group:'mm',  version:'v1.0',  file:'ytplay_v10.zip',
+    desc:'A YouTube player for Windows 3.1. A server-side bridge (yt-dlp + ffmpeg) fetches and transcodes video; the Win16 client plays it back via MCI over TCP. Watch YouTube on a 486.',
+    tags:['C89','Win16','MCI','yt-dlp','ffmpeg','TCP'] },
+  { id:'sbvgm',   name:'SBVGM',           icon:'🎵', group:'mm',  version:'v1.0',  file:'sbvgm_v10.zip',
+    desc:'A Win16 VGM and SID-to-OPL3 chiptune player optimised for 486 hardware. Diagnostic logging removed from audio callbacks, prefetch buffering, and write-trap filtering for minimal latency.',
+    tags:['C89','Win16','OPL3','VGM','SID','Audio'] },
+  { id:'iconedit',name:'ICONEDIT',         icon:'🎨', group:'mm',  version:'v1.0',  file:'iconedit_v10.zip',
+    desc:'A Win16 icon editor with palette editing, BMP import, selection/cut/copy/paste, transparent colour support, and dirty-rect optimisation. Create and edit .ICO files natively on Windows 3.1.',
+    tags:['C89','Win16','GDI','ICO','BMP','Graphics'] },
+  { id:'snip',    name:'SNIP',             icon:'✂',  group:'ai',  version:'v1.0',  file:'snip_v10.zip',
+    desc:'A screen capture tool for Windows 3.1. Rubber-band region selection, clipboard copy, and BMP save. The Win16 Snipping Tool — a decade before Vista shipped one. Extensively debugged for correct palette handling.',
+    tags:['C89','Win16','GDI','Clipboard','BMP','Capture'] },
+  { id:'pocket',  name:'Pocket 386\nWiFi', icon:'📶', group:'net', version:'v1.0',  file:'pocket386_v10.zip',
+    desc:'Hardware project embedding a Raspberry Pi Zero 2W inside a Pocket 386 portable to provide DOS/mTCP network access via the machine\'s internal TTL serial. Key finding: the hardware UART (COM1) works directly — no bit-bang GPIO TSR needed.',
+    tags:['Hardware','RPi Zero 2W','mTCP','DOS','WiFi','Serial'] },
+  { id:'mdview',  name:'MD Viewer',         icon:'📄', group:'ai',  version:'v1.0',  file:'mdview_v10.zip',
+    desc:'A Markdown viewer and editor for Windows 3.1. Renders Markdown to styled Win16 controls natively, with an editing mode. Read your READMEs on the machine they were written about.',
+    tags:['C89','Win16','Markdown','GDI','Rich Text'] }
+];
+
+const GROUP_MAP = { net:'icons-net', mm:'icons-mm', ai:'icons-ai' };
+
+// ── BOOT ─────────────────────────────────────────────────
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+async function boot() {
+  const t = [70,70,50,130,160,50,180,80,50,90,70,50,120,100,50,380,50,700];
+  for (let i = 0; i < 18; i++) {
+    await sleep(t[i] ?? 80);
+    document.getElementById('b'+i)?.classList.add('on');
+  }
+  await sleep(400);
+  const b = document.getElementById('boot');
+  b.style.transition='opacity 0.3s'; b.style.opacity='0';
+  await sleep(300); b.style.display='none';
+
+  const logo = document.getElementById('winlogo');
+  logo.classList.add('show');
+  const bar = document.getElementById('progbar');
+  for (let p=0; p<=100; p+=3) {
+    bar.style.width=p+'%';
+    await sleep(22+Math.random()*16);
+  }
+  await sleep(300);
+  logo.style.transition='opacity 0.35s'; logo.style.opacity='0';
+  await sleep(350); logo.style.display='none';
+
+  document.getElementById('desktop').classList.add('show');
+  populateIcons();
+
+  for (const id of ['grp-net','grp-mm','grp-ai']) {
+    const el=document.getElementById(id);
+    el.style.opacity='0'; el.style.transition='opacity 0.2s';
+    await sleep(130); el.style.opacity='1';
+  }
+  await sleep(700);
+  openAbout();
+}
+
+// ── ICONS ─────────────────────────────────────────────────
+function populateIcons() {
+  APPS.forEach(app => {
+    const c = document.getElementById(GROUP_MAP[app.group]);
+    if (!c) return;
+    const el = document.createElement('div');
+    el.className = 'prog-icon';
+    el.innerHTML = `<div class="prog-img">${app.icon}</div><div class="prog-label">${app.name}</div>`;
+    el.addEventListener('click', () => { document.querySelectorAll('.prog-icon').forEach(x=>x.classList.remove('sel')); el.classList.add('sel'); document.getElementById('status-msg').textContent=app.name.replace('\n',' '); });
+    el.addEventListener('dblclick', () => openDetail(app.id));
+    c.appendChild(el);
+  });
+  document.getElementById('status-count').textContent = APPS.length+' objects';
+}
+
+// ── WINDOW MANAGEMENT ────────────────────────────────────
+let _z=20;
+const bringFront = id => { const w=typeof id==='string'?document.getElementById(id):id; if(w) w.style.zIndex=++_z; };
+const closeWin   = id => { const w=document.getElementById(id); if(w) w.style.display='none'; };
+const maxWin     = id => { const w=document.getElementById(id); w.style.cssText+='left:0;top:0;width:100%;height:100%;'; };
+const openAbout  = () => { const w=document.getElementById('aboutwin'); w.style.display='flex'; bringFront('aboutwin'); };
+
+// Drag
+let _drag=null;
+document.addEventListener('mousedown', e => {
+  const bar = e.target.closest('[data-win]');
+  if (!bar || e.target.classList.contains('tbtn')) return;
+  const win = document.getElementById(bar.dataset.win);
+  if (!win || getComputedStyle(win).position==='relative') return;
+  bringFront(win);
+  const r=win.getBoundingClientRect();
+  _drag={win, ox:e.clientX-r.left, oy:e.clientY-r.top};
+  e.preventDefault();
+});
+document.addEventListener('mousemove', e => {
+  if (!_drag) return;
+  _drag.win.style.left = Math.max(-200, Math.min(window.innerWidth-50,  e.clientX-_drag.ox))+'px';
+  _drag.win.style.top  = Math.max(0,    Math.min(window.innerHeight-30, e.clientY-_drag.oy))+'px';
+});
+document.addEventListener('mouseup', () => { _drag=null; });
+document.addEventListener('mousedown', e => { const w=e.target.closest('.window'); if(w&&getComputedStyle(w).position!=='relative') bringFront(w); }, true);
+
+// ── APP DETAIL ────────────────────────────────────────────
+let _app = null;
+function openDetail(id) {
+  _app = APPS.find(a=>a.id===id);
+  if (!_app) return;
+  document.getElementById('det-sys').textContent  = _app.icon;
+  document.getElementById('det-tbar').textContent = _app.name.replace('\n',' ');
+  document.getElementById('det-icon').textContent = _app.icon;
+  document.getElementById('det-name').textContent = _app.name.replace('\n',' ');
+  document.getElementById('det-meta').innerHTML   = `Version: ${_app.version} &nbsp;|&nbsp; Platform: Win16 / Windows 3.1<br>Archive: ${_app.file}`;
+  document.getElementById('det-desc').textContent = _app.desc;
+  const tr = document.getElementById('det-tags');
+  tr.innerHTML='';
+  _app.tags.forEach(t=>{ const s=document.createElement('span'); s.className='tag'; s.textContent=t; tr.appendChild(s); });
+  document.getElementById('btn-dl').disabled = false;
+  const w=document.getElementById('detwin');
+  w.style.display='flex'; bringFront('detwin');
+}
+
+// ── PUTER.JS — DOWNLOAD ───────────────────────────────────
+async function downloadApp() {
+  if (!_app?.file) return;
+  const btn = document.getElementById('btn-dl');
+  btn.textContent='⏳ Fetching…'; btn.disabled=true;
+  try {
+    // Upload your ZIPs to Puter cloud under /win16-apps/<filename>
+    const blob = await puter.fs.read('/win16-apps/'+_app.file);
+    const url  = URL.createObjectURL(blob);
+    const a    = Object.assign(document.createElement('a'), {href:url, download:_app.file});
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    btn.textContent='✔ Downloaded';
+  } catch(err) {
+    alert('File not found in Puter cloud storage.\n\nTo enable downloads, upload your ZIP archives to Puter under the path:\n  /win16-apps/'+_app.file+'\n\nError: '+err.message);
+    btn.textContent='📦 Download';
+  }
+  setTimeout(()=>{ btn.disabled=false; btn.textContent='📦 Download'; }, 3000);
+}
+
+// ── PUTER.JS — AI CHAT ────────────────────────────────────
+const SYS = `You are a concise technical assistant embedded in a retro Windows 3.1 portfolio website. The developer is Mark (GitHub: kokakoda). He builds novel Win16 applications for real Windows 3.1 hardware using Borland C++ 4.0, C89, Win16 Large Model, and Winsock 1.1.
+
+Applications in this collection:
+${APPS.map(a=>`- ${a.name.replace('\n',' ')} (${a.version}): ${a.desc}`).join('\n')}
+
+Answer questions about these apps, running them, Windows 3.1 setup, Win16 programming, Borland C++, Winsock, 486 hardware, and related topics. Be technically precise and concise. Use plain text only — no markdown.`;
+
+const history = [];
+
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function appendMsg(role, text) {
+  const log = document.getElementById('chat-log');
+  const d = document.createElement('div');
+  d.className='cmsg '+role;
+  d.innerHTML=`<span class="who">${{user:'You',ai:'Help',sys:'System'}[role]??role}:</span> ${esc(text)}`;
+  log.appendChild(d);
+  log.scrollTop=log.scrollHeight;
+}
+
+async function sendChat() {
+  const inp = document.getElementById('chat-inp');
+  const msg = inp.value.trim();
+  if (!msg) return;
+  inp.value='';
+  appendMsg('user', msg);
+  history.push({role:'user', content:msg});
+  document.getElementById('chat-st').textContent='Thinking…';
+
+  const w=document.getElementById('chatwin');
+  w.style.display='flex'; bringFront('chatwin');
+
+  try {
+    const resp = await puter.ai.chat(history, {system:SYS});
+    const text = resp?.message?.content?.[0]?.text ?? String(resp ?? '(no response)');
+    history.push({role:'assistant', content:text});
+    appendMsg('ai', text);
+    document.getElementById('chat-st').textContent='Ready — powered by puter.ai';
+  } catch(err) {
+    appendMsg('sys', 'Error: '+err.message);
+    document.getElementById('chat-st').textContent='Error';
+  }
+}
+
+function chatClear() {
+  history.length=0;
+  document.getElementById('chat-log').innerHTML='';
+  appendMsg('sys','Conversation cleared.');
+}
+
+function askAboutApp() {
+  if (!_app) return;
+  const w=document.getElementById('chatwin');
+  w.style.display='flex'; bringFront('chatwin');
+  if (history.length===0) appendMsg('sys','Welcome to Win16 Help. Ask me anything about these applications or Win16 development.');
+  document.getElementById('chat-inp').value='Tell me about '+_app.name.replace('\n',' ');
+  document.getElementById('chat-inp').focus();
+}
+
+boot();
+</script>
+</body>
+</html>
